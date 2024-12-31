@@ -1,0 +1,127 @@
+{% extends "network/layout.html" %} {% block body %}
+<div class="container">
+  <h1 class="display-6">All Posts</h1>
+
+  {% if user.is_authenticated %}
+
+  <div
+    class="shadow-sm border-2 bg-light text-dark border border-secondary rounded-2 p-4 m-3"
+  >
+    <h5 class="mb-3">What's on your Mind Today?</h5>
+    <form action="{% url 'newPost' %}" method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <textarea
+          type="text"
+          rows="5"
+          class="border border-1 border-dark rounded-2 bg-secondary-subtle form-control"
+          name="content"
+          placeholder=""
+        >
+Write Your Thoughts Here</textarea
+        >
+      </div>
+      <button type="submit" class="btn-dark btn ms-auto">Create Post</button>
+    </form>
+  </div>
+
+  {% endif %}
+
+  <hr />
+
+  {% for p in page_posts %}
+
+  <div class="mb-4" key="{index}">
+    <div
+      class="card bg-secondary-subtle text-dark border-dark rounded-2 shadow-sm"
+    >
+      <div class="card-body position-relative">
+        <!-- <h5 class="card-title">{{p.user.username}}</h5> -->
+        <p class="card-text fw-medium">{{p.content}}</p>
+        <p class="text-muted mb-2">
+          Posted by:
+          <a class="text-decoration-none fw-medium text-dark" href="{% url 'profile' uid=p.user.id %}"> {{p.user}} </a>
+        </p>    
+        <p class="text-muted">Timestamp: {{p.timestamp}}</p>
+        <div class="d-flex align-items-center gap-3">
+          <button
+            type="button"
+            class="btn btn-light border-dark rounded-2 d-flex align-items-center gap-2"
+          >
+            <i class="fas fa-thumbs-up"></i> <span class="fw-bold">10</span>
+          </button>
+        </div>
+        <button
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#edit_modal_{{p.id}}"
+          class="position-absolute top-0 end-0 me-3 mt-3 btn btn-light border-dark rounded-2 d-flex align-items-center gap-2"
+        >
+          <i class="fas fa-pen"></i> Edit
+        </button>
+        <div
+          class="modal fade"
+          id="edit_modal_{{p.id}}"
+          data-bs-backdrop="static"
+          data-bs-keyboard="false"
+          role="dialog"
+        >
+          <div
+            class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
+            role="document"
+          >
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modalTitleId">Modal title</h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">Body</div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Close
+                </button>
+                <button type="button" class="btn btn-primary">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="d-flex justify-content-center">
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+        {% if page_posts.has_previous %}
+        <li class="page-item">
+          <a
+            class="p-2 px-5 page-link bg-dark text-white"
+            href="?page={{ page_posts.previous_page_number }}"
+            >Previous</a
+          >
+        </li>
+        {% endif %} {% if page_posts.has_next %}
+        <li class="page-item">
+          <a
+            class="p-2 px-5 page-link bg-dark text-white"
+            href="?page={{ page_posts.next_page_number }}"
+            >Next</a
+          >
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</div>
+
+{% endblock %}

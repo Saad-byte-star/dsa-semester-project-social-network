@@ -1,0 +1,69 @@
+{% extends "network/layout.html" %} {% block body %}
+<div class="container my-3">
+  <div class="text-center">
+    <img
+      src="https://via.placeholder.com/150"
+      alt="Profile"
+      class="rounded-circle mb-3"
+    />
+    <h3>{{ user_profile.username }}</h3>
+    <div class="d-flex justify-content-center mb-3">
+      <div class="mx-3">
+        <h5>{{ followers }}</h5>
+        <p class="text-muted">Followers</p>
+      </div>
+      <div class="mx-3">
+        <h5>{{ following }}</h5>
+        <p class="text-muted">Following</p>
+      </div>
+    </div>
+    {% if user.is_authenticated and user != user_profile %}
+    <form
+      action="{% if is_following %}{% url 'unfollow' %}{% else %}{% url 'follow' %}{% endif %}"
+      method="post"
+    >
+      {% csrf_token %}
+      <input
+        type="hidden"
+        name="userfollow"
+        value="{{ user_profile.username }}"
+      />
+      <button type="submit" class="btn btn-dark">
+        {% if is_following %} Unfollow {% else %} Follow {% endif %}
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  <hr />
+  {% for post in page_posts %}
+  <div class="card mb-3">
+    <div class="card-body">
+      <p>{{ post.content }}</p>
+      <p class="text-muted">Posted on {{ post.timestamp }}</p>
+    </div>
+  </div>
+  {% endfor %}
+  <div class="d-flex justify-content-center">
+    <nav>
+      <ul class="pagination">
+        {% if page_posts.has_previous %}
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="?page={{ page_posts.previous_page_number }}"
+            >Previous</a
+          >
+        </li>
+        {% endif %} {% if page_posts.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_posts.next_page_number }}"
+            >Next</a
+          >
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</div>
+{% endblock %}
