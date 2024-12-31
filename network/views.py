@@ -1,10 +1,48 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect , JsonResponse
 from django.shortcuts import render , redirect, get_object_or_404
 from django.urls import reverse
-from .models import User , Post , Follower
+from .models import User , Post , Follower , Like
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import json
+
+def like_post(request, pid):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "You must be logged in to like posts."}, status=401)
+    
+    post = get_object_or_404(Post, id=pid)
+    user = request.user
+
+    # Check if the user already likes the post
+    existing_like = Like.objects.filter(user=user, post=post).first()
+
+    if existing_like:
+        # Unlike the post
+        existing_like.delete()
+        return JsonResponse({"liked": False, "like_count": post.likes.count()})
+    else:
+        # Like the post
+        Like.objects.create(user=user, post=post)
+        return JsonResponse({"liked": True, "like_count": post.likes.count()})
+
+def edit(request, pid):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            new_content = data.get("content")
+            if new_content:
+                post_to_edit = Post.objects.get(pk=pid)
+                post_to_edit.content = new_content
+                post_to_edit.save()
+                return JsonResponse({"message": "Post updated successfully"}, status=200)
+            else:
+                return JsonResponse({"error": "No content provided"}, status=400)
+        except Post.DoesNotExist:
+            return JsonResponse({"error": "Post not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
 
 def index(request):
     allPosts = Post.objects.all().order_by("id").reverse()
